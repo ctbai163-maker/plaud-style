@@ -1,0 +1,210 @@
+/* ────────────────────────────────────────────────────────────────────────
+   base.css — Plaud 统一 HTML 样式 (skill: plaud-style)
+   ────────────────────────────────────────────────────────────────────────
+   用法：本地 HTML 把整份内联进 <style>（page.py 的 render_page 会做）；
+   发布成 Artifact 时同样内联，并遵守 artifact-design 的页面契约
+   （这份文件已按它的主题结构写：每个 token 先在 :root 定义，深色在
+   :root:not([data-theme="light"]) 和 :root[data-theme="dark"] 里重定义）。
+
+   出处：Japan Brand Tracking 的 base.css 泛化而来。改动：
+     * 去掉 segment 配色，新增负向色和图表标记色 --m-*；
+     * 徽章文字改成按底色选黑/白（原来白字压在青/绿上，对比度 1.5–1.8:1）；
+     * --ink-muted 从 #888（3.4:1）改为 #6B6661（5.4:1）；
+     * 图放进 .chart-frame，框内永远是浅底——图是按浅底画的，深色页面里不会消失。
+
+   颜色规则（完整版见 SKILL.md）：
+     * --brand-*  品牌原色：大面积填充、徽章底色、色块。青/绿太浅，不当线、不当字。
+     * --m-*      图表标记色：线、点、细柱、描边；已用 dataviz 校验脚本验证。
+     * --*-text   文字色：行内强调。文字永远不用系列色，用这一组。
+     * 极性（升/降）= 蓝/红；绿只表示"已确认/通过"，且必须带图标或文字。
+   ──────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* surface / ink */
+  --ink:        #413D3B;
+  --ink-muted:  #6B6661;
+  --bg:         #FAFAF7;
+  --bg-card:    #FFFFFF;
+  --bg-tint:    #F2EDFB;   /* 结论块底色：品牌紫的极淡浅化 */
+  --border:     #E0DDD9;
+  --rule:       #CCCCCC;
+
+  /* brand fills */
+  --brand-purple: #8F53ED;  /* Victory Purple */
+  --brand-blue:   #00D0FF;  /* Clarity Blue   */
+  --brand-green:  #21EF6A;  /* Amplify Green  */
+  --brand-black:  #000000;
+
+  /* chart marks (validated) */
+  --m-purple:  #8F53ED;
+  --m-blue:    #099EC3;
+  --m-green:   #03A745;
+  --m-neutral: #8C8883;
+  --m-neg:     #C03A2B;
+
+  /* text-safe */
+  --purple-text: #814BD5;
+  --blue-text:   #007D99;
+  --green-text:  #12833A;
+  --neg-text:    #C03A2B;
+
+  /* 图的底：永远浅色 */
+  --chart-surface: #FFFFFF;
+
+  /* type scale */
+  --text-2xl: 1.7rem;
+  --text-xl:  1.25rem;
+  --text-lg:  1.05rem;
+  --text-base: 0.95rem;
+  --text-sm:  0.85rem;
+  --text-xs:  0.75rem;
+
+  --radius: 7px;
+  --measure: 68ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink:       #EDEBE8;
+    --ink-muted: #A19C97;
+    --bg:        #1C1B19;
+    --bg-card:   #26241F;
+    --bg-tint:   #2D2540;
+    --border:    #3A3733;
+    --rule:      #4A4642;
+    --m-neg:     #C64030;
+    --purple-text: #A575F1;
+    --blue-text:   #00D0FF;
+    --green-text:  #21EF6A;
+    --neg-text:    #E8604D;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ink:       #EDEBE8;
+  --ink-muted: #A19C97;
+  --bg:        #1C1B19;
+  --bg-card:   #26241F;
+  --bg-tint:   #2D2540;
+  --border:    #3A3733;
+  --rule:      #4A4642;
+  --m-neg:     #C64030;
+  --purple-text: #A575F1;
+  --blue-text:   #00D0FF;
+  --green-text:  #21EF6A;
+  --neg-text:    #E8604D;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding-inline: 16px;
+  padding-block: 28px 56px;
+  font-family: "Helvetica Neue", Arial, "PingFang SC", "Noto Sans SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.7;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.page { max-width: 880px; margin-inline: auto; display: flex; flex-direction: column; gap: 28px; }
+.page > * { min-width: 0; }
+
+h1 { font-size: var(--text-2xl); font-weight: 800; line-height: 1.25; margin: 0; text-wrap: balance; }
+h2 { font-size: var(--text-xl);  font-weight: 700; line-height: 1.3;  margin: 0 0 8px; text-wrap: balance; }
+h3 { font-size: var(--text-lg);  font-weight: 700; margin: 0 0 6px; }
+p  { margin: 0 0 10px; max-width: var(--measure); }
+.meta { font-size: var(--text-sm); color: var(--ink-muted); margin: 6px 0 0; }
+
+.caption, .footnote, .n-annotation {
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+/* 核心结论：一块，放最前面 */
+.finding {
+  background: var(--bg-tint);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+.finding .label {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--purple-text);
+  margin-bottom: 4px;
+}
+.finding p:last-child { margin-bottom: 0; }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+
+/* 图：框内永远浅底 */
+.chart-frame {
+  background: var(--chart-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  overflow-x: auto;
+}
+.chart-frame img, .chart-frame svg { display: block; max-width: 100%; height: auto; margin-inline: auto; }
+/* 图按 ~6in 宽设计；并排两列会把字缩到 6pt 以下，所以最小列宽 460px：页面宽 880 时自然单列 */
+.chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 16px; }
+
+/* 数字块：只有数字本身是重点时才用 */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.kpi { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; }
+.kpi .value { font-size: 1.6rem; font-weight: 800; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.kpi .label { font-size: var(--text-xs); color: var(--ink-muted); }
+
+/* 表：横线、无竖线 */
+.scroll-x { overflow-x: auto; max-width: 100%; }
+table.data-table { border-collapse: collapse; width: 100%; font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+table.data-table th, table.data-table td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); }
+table.data-table th { font-weight: 700; border-bottom: 2px solid var(--ink); }
+table.data-table th:first-child, table.data-table td:first-child { text-align: left; }
+table.data-table tr.hl td { background: var(--bg-tint); font-weight: 700; }
+
+/* 徽章：底色是品牌原色，文字按底色明暗选黑/白 */
+.badge {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--brand-purple);
+  color: #FFFFFF;
+}
+.badge.purple  { background: var(--brand-purple); color: #FFFFFF; }
+.badge.blue    { background: var(--brand-blue);   color: #1C1B19; }
+.badge.green   { background: var(--brand-green);  color: #1C1B19; }
+.badge.neg     { background: #C03A2B;             color: #FFFFFF; }
+.badge.neutral { background: var(--border);       color: var(--ink); }
+
+/* 行内文字强调：用 *-text，不用系列色 */
+.emphasis { color: var(--purple-text); font-weight: 700; }
+.up       { color: var(--blue-text);   font-weight: 700; }   /* 极性：正向 */
+.down     { color: var(--neg-text);    font-weight: 700; }   /* 极性：负向 */
+.ok       { color: var(--green-text);  font-weight: 700; }   /* 状态：已确认，配 ✓ 或文字 */
+
+/* 图例/色块小方块 */
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: baseline; }
+.swatch.s1 { background: var(--m-purple); }
+.swatch.s2 { background: var(--m-blue); }
+.swatch.s3 { background: var(--m-green); }
+.swatch.other { background: var(--m-neutral); }
+.swatch.neg { background: var(--m-neg); }
+
+img.chart { max-width: 100%; height: auto; }
+a { color: var(--blue-text); }
+:focus-visible { outline: 2px solid var(--purple-text); outline-offset: 2px; }
